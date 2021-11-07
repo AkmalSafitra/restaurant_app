@@ -1,7 +1,5 @@
-
 import 'dart:convert';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:restaurantapp/common/navigation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -10,14 +8,14 @@ import 'package:rxdart/rxdart.dart';
 
 final selectNotificationSubject = BehaviorSubject<String>();
 
+
 class NotificationHelper{
   static NotificationHelper? _instance;
+  int randomRestaurantIndex = 0;
 
   NotificationHelper._internal(){
     _instance = this;
   }
-
-  late int randomRestaurantIndex;
 
   factory NotificationHelper() => _instance ?? NotificationHelper._internal();
 
@@ -36,12 +34,10 @@ class NotificationHelper{
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: (String? payload) async {
-
           if(payload != null){
             print('notification payload: ' + payload);
           }
           selectNotificationSubject.add(payload ?? 'empty payload');
-
         });
   }
 
@@ -67,7 +63,9 @@ class NotificationHelper{
         android: androidPlatformChannelSpecifics, iOS: iOSPlatformChannelSpecifics
     );
 
+    print("len random : " + resturants.restaurants.length.toString());
     randomRestaurantIndex = Random().nextInt(resturants.restaurants.length - 1);
+    print("random index : " + randomRestaurantIndex.toString());
     var titleNotification = "<b>Discover Top Restaurant</b>";
     var titleRestaurant = resturants.restaurants[randomRestaurantIndex].name;
 
@@ -78,6 +76,8 @@ class NotificationHelper{
   void configureSelectNotificationSubject(String route, BuildContext context){
     selectNotificationSubject.stream.listen((String payload) async {
       var data = RestaurantResult.fromJson(json.decode(payload));
+      print("random index pushed : " + randomRestaurantIndex.toString());
+      print("random index pushed id : " + data.restaurants[randomRestaurantIndex].id.toString());
       Navigator.pushNamed(context, route, arguments: data.restaurants[randomRestaurantIndex].id);
     });
   }
